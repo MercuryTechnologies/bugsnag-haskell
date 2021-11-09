@@ -4,7 +4,7 @@ cabal-version: 1.18
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8eda1d90b7223144d001890e9e0a258278539029f04e0b894899e0fbb0c83b14
+-- hash: 9cd125352eed87f67563d7207e550aa7d1cf0040ad835938a1c1d8f20e1aeafe
 
 name:           bugsnag-haskell
 version:        0.0.4.1
@@ -41,6 +41,7 @@ library
       Network.Bugsnag.Event
       Network.Bugsnag.Exception
       Network.Bugsnag.Exception.Parse
+      Network.Bugsnag.Lens
       Network.Bugsnag.Notifier
       Network.Bugsnag.Notify
       Network.Bugsnag.ReleaseStage
@@ -94,6 +95,8 @@ library
     , http-conduit
     , http-types
     , iproute
+    , microlens
+    , mtl
     , network
     , parsec
     , template-haskell

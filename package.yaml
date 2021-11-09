@@ -67,6 +67,8 @@ library:
     - http-conduit
     - http-types
     - iproute
+    - microlens
+    - mtl
     - network
     - parsec
     - template-haskell
