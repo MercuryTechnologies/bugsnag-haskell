@@ -7,6 +7,7 @@ module Network.Bugsnag.Settings
     , BugsnagSettings(..)
     , newBugsnagSettings
     , bugsnagSettings
+    , addBeforeNotify
     , bugsnagShouldNotify
     ) where
 
@@ -136,3 +137,8 @@ bugsnagShouldNotify settings event
 --
 newBugsnagSettings :: BugsnagApiKey -> IO BugsnagSettings
 newBugsnagSettings apiKey = bugsnagSettings apiKey <$> getGlobalManager
+
+-- | Prepend a 'BeforeNotify' to 'bsBeforeNotify'
+addBeforeNotify :: BeforeNotify -> BugsnagSettings -> BugsnagSettings
+addBeforeNotify f settings =
+    settings { bsBeforeNotify = f . bsBeforeNotify settings }

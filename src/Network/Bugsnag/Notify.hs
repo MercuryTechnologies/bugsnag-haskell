@@ -20,19 +20,9 @@ import Network.Bugsnag.StackFrame
 
 -- | Notify Bugsnag of a single exception
 notifyBugsnag :: BugsnagSettings -> SomeException -> IO ()
-notifyBugsnag = notifyBugsnagWith id
-
--- | Notify Bugsnag of a single exception, modifying the event
---
--- This is used to (e.g.) change severity for a specific error. Note that the
--- given function runs after any configured @'bsBeforeNotify'@, or changes
--- caused by other aspects of settings (e.g. grouping hash).
---
-notifyBugsnagWith :: BeforeNotify -> BugsnagSettings -> SomeException -> IO ()
-notifyBugsnagWith f settings ex = do
+notifyBugsnag settings ex = do
     let event =
-            f
-                . bsBeforeNotify settings
+            bsBeforeNotify settings
                 . modifyStackFrames (bsCodeIndex settings)
                 . createApp settings
                 . bugsnagEvent
@@ -47,6 +37,10 @@ notifyBugsnagWith f settings ex = do
     -- before-notify is applied, stack-frame filtering, etc.
     when (bugsnagShouldNotify settings event)
         $ reportError manager apiKey report
+
+notifyBugsnagWith :: BeforeNotify -> BugsnagSettings -> SomeException -> IO ()
+notifyBugsnagWith f = notifyBugsnag . addBeforeNotify f
+{-# DEPRECATED notifyBugsnagWith "Use addBeforeNotify and notifyBugsnag" #-}
 
 -- |
 --
