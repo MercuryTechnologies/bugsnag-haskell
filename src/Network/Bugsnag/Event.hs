@@ -1,6 +1,7 @@
 module Network.Bugsnag.Event
     ( BugsnagEvent(..)
     , bugsnagEvent
+    , bugsnagContextFromWaiRequest
     ) where
 
 import Prelude
@@ -8,6 +9,7 @@ import Prelude
 import Data.Aeson
 import Data.Aeson.Types
 import Data.Text (Text)
+import qualified Data.Text as T
 import Network.Bugsnag.App
 import Network.Bugsnag.Breadcrumb
 import Network.Bugsnag.Device
@@ -16,6 +18,7 @@ import Network.Bugsnag.Request
 import Network.Bugsnag.Severity
 import Network.Bugsnag.Thread
 import Network.Bugsnag.User
+import Network.Wai (Request, pathInfo)
 
 data BugsnagEvent = BugsnagEvent
     { beException :: BugsnagException
@@ -73,3 +76,6 @@ bugsnagEvent exception = BugsnagEvent
     , beDevice = Nothing
     , beMetaData = Nothing
     }
+
+bugsnagContextFromWaiRequest :: Request -> Text
+bugsnagContextFromWaiRequest = ("/" <>) . T.intercalate "/" . pathInfo

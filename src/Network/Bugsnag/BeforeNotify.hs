@@ -22,6 +22,8 @@ module Network.Bugsnag.BeforeNotify
     , redactRequestHeaders
 
     -- * Simple setters
+    , setAppVersion
+    , setContext
     , setDevice
     , setRequest
     , setStacktrace
@@ -37,6 +39,7 @@ import Prelude
 import Control.Exception (Exception, fromException)
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
+import Network.Bugsnag.App
 import Network.Bugsnag.BugsnagRequestHeaders
 import Network.Bugsnag.CodeIndex
 import Network.Bugsnag.Device
@@ -196,6 +199,20 @@ redactHeaders headers request = request
 --
 setRequest :: BugsnagRequest -> BeforeNotify
 setRequest request event = event { beRequest = Just request }
+
+-- | Set the Event's App's Version
+setAppVersion :: Text -> BeforeNotify
+setAppVersion version event = event
+    { beApp = Just $ setVersion $ fromMaybe bugsnagApp $ beApp event
+    }
+    where setVersion app = app { baVersion = Just version }
+
+-- | Set the Event's Context
+--
+-- See @'bugsnagContextFromWaiRequest'@
+--
+setContext :: Text -> BeforeNotify
+setContext context event = event { beContext = Just context }
 
 -- | Set the Event's Device
 --
