@@ -1,24 +1,51 @@
+-- | Experimental Lens-based interface
+--
+-- Usage
+--
+-- @
+-- data App = App
+--   { appBugsnagSettings :: 'BugsnagSettings'
+--   , ...
+--   }
+--
+-- instance 'HasBugsnagSettings' App where
+--   'bugsnagSettingsL' = lens appBugsnagSettings $ \x y -> { appBugsnagSettings = y }
+--
+-- loadApp :: IO App
+-- loadApp = App
+--   <$> ('newBugsnagSettings' <$> getEnv "BUGSNAG_API_KEY")
+--   <*> -- ...
+--
+-- thing :: (MonadIO m, MonadReader App m) => m ()
+-- thing = f `catchAny` 'notifyBugsnag'
+-- @
+--
+-- Local adjustments:
+--
+-- @
+-- thingWithReportingDisabled :: (MonadIO m, MonadReader App m) => m ()
+-- thingWithReportingDisabled =
+--   local ('bugsnagSettingsL' . 'ignoreExceptionL' .~ const True) thing
+--
+-- thingWithCustomBeforeNotify :: (MonadIO m, MonadReader App m) => m ()
+-- thingWithCustomBeforeNotify
+--   local ('bugsnagSettingsL' . 'beforeNotifyL' %~ (. 'contextL' ?~ "x")) thing
+-- @
+--
 module Network.Bugsnag.Lens
-    ( HasBugsnagSettings(..)
+    ( module Network.Bugsnag.Settings.Lens
+    , module Network.Bugsnag.Event.Lens
     , notifyBugsnag
-    , suppressBugsnag
-    , withBugsnagSettings
     ) where
 
 import Prelude
 
 import Control.Exception (SomeException)
 import Control.Monad.Reader
-import Lens.Micro
 import Lens.Micro.Extras (view)
+import Network.Bugsnag.Event.Lens
 import qualified Network.Bugsnag.Notify as Notify
-import Network.Bugsnag.Settings
-
-class HasBugsnagSettings env where
-    bugsnagSettingsL :: Lens' env BugsnagSettings
-
-instance HasBugsnagSettings BugsnagSettings where
-    bugsnagSettingsL = id
+import Network.Bugsnag.Settings.Lens
 
 notifyBugsnag
     :: (MonadIO m, MonadReader env m, HasBugsnagSettings env)
@@ -27,14 +54,3 @@ notifyBugsnag
 notifyBugsnag ex = do
     settings <- asks $ view bugsnagSettingsL
     liftIO $ Notify.notifyBugsnag settings ex
-
-suppressBugsnag :: (MonadReader env m, HasBugsnagSettings env) => m a -> m a
-suppressBugsnag = withBugsnagSettings
-    $ \settings -> settings { bsIgnoreException = const True }
-
-withBugsnagSettings
-    :: (MonadReader env m, HasBugsnagSettings env)
-    => (BugsnagSettings -> BugsnagSettings)
-    -> m a
-    -> m a
-withBugsnagSettings f = local (bugsnagSettingsL %~ f)

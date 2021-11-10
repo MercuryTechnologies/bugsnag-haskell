@@ -4,7 +4,7 @@ cabal-version: 1.18
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9cd125352eed87f67563d7207e550aa7d1cf0040ad835938a1c1d8f20e1aeafe
+-- hash: 5fba8c5e49415be728f9b073b73535ba9a170fcf930f47e080d23b7167cfd1bf
 
 name:           bugsnag-haskell
 version:        0.0.4.1
@@ -39,6 +39,7 @@ library
       Network.Bugsnag.CodeIndex
       Network.Bugsnag.Device
       Network.Bugsnag.Event
+      Network.Bugsnag.Event.Lens
       Network.Bugsnag.Exception
       Network.Bugsnag.Exception.Parse
       Network.Bugsnag.Lens
@@ -50,6 +51,7 @@ library
       Network.Bugsnag.Request
       Network.Bugsnag.Session
       Network.Bugsnag.Settings
+      Network.Bugsnag.Settings.Lens
       Network.Bugsnag.Severity
       Network.Bugsnag.StackFrame
       Network.Bugsnag.Thread

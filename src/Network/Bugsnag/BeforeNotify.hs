@@ -27,6 +27,7 @@ module Network.Bugsnag.BeforeNotify
     , setDevice
     , setRequest
     , setStacktrace
+    , setUserId
 
     -- * Setting severity
     , setWarningSeverity
@@ -49,6 +50,7 @@ import Network.Bugsnag.Request
 import Network.Bugsnag.Session
 import Network.Bugsnag.Severity
 import Network.Bugsnag.StackFrame
+import Network.Bugsnag.User
 import Network.HTTP.Types.Header (HeaderName)
 import Network.Wai (Request)
 
@@ -160,10 +162,12 @@ updateEventFromWaiRequest wrequest =
 
 updateEventFromWaiRequestUnredacted :: Request -> BeforeNotify
 updateEventFromWaiRequestUnredacted wrequest =
-    let
-        mdevice = bugsnagDeviceFromWaiRequest wrequest
-        request = bugsnagRequestFromWaiRequest wrequest
-    in maybe id setDevice mdevice . setRequest request
+    setContext (bugsnagContextFromWaiRequest wrequest)
+        . maybe id setDevice mdevice
+        . setRequest request
+  where
+    mdevice = bugsnagDeviceFromWaiRequest wrequest
+    request = bugsnagRequestFromWaiRequest wrequest
 
 -- | Update the Event's Context and User from the Session
 updateEventFromSession :: BugsnagSession -> BeforeNotify
@@ -228,6 +232,13 @@ setDevice device event = event { beDevice = Just device }
 setStacktrace :: [BugsnagStackFrame] -> BeforeNotify
 setStacktrace stacktrace =
     updateException $ \ex -> ex { beStacktrace = stacktrace }
+
+-- | Set the Event's User's Id
+setUserId :: Text -> BeforeNotify
+setUserId userId event = event
+    { beUser = Just $ setId $ fromMaybe bugsnagUser $ beUser event
+    }
+    where setId user = user { buId = Just userId }
 
 -- | Set to @'ErrorSeverity'@
 setErrorSeverity :: BeforeNotify
